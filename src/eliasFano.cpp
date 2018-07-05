@@ -32,26 +32,22 @@
 // the bits used for the encoding
 #define BITS 32
 
-// #define DEBUG
-
 typedef std::pair<unsigned short, std::bitset<BITS> > BitSet32;
 typedef std::vector<bool> BoolVec;
 typedef std::string CellType;
 
 typedef float IDFtype;
 
-
-
 // struct that holds the quantization vector
 typedef struct{
   double mu;
   double sigma;
   std::vector<bool> quantile;
-template<class Archive>
-void serialize(Archive& archive)
-{
-archive(mu,sigma,quantile);
-}
+  template<class Archive>
+    void serialize(Archive& archive)
+  {
+    archive(mu,sigma,quantile);
+  }
 } Quantile;
 
 typedef struct
@@ -61,11 +57,11 @@ typedef struct
   int l;
   IDFtype idf;
   Quantile expr;
-template<class Archive>
-void serialize(Archive& archive)
-{
-archive(H,L,l,idf,expr);
-}
+  template<class Archive>
+  void serialize(Archive& archive)
+  {
+    archive(H,L,l,idf,expr);
+  }
 
 } EliasFano;
 
@@ -191,12 +187,12 @@ Quantile lognormalcdf(std::vector<int> ids, const Rcpp::NumericVector& v, unsign
     std::bitset<BITS> q = int2bin_core(t);
     for (int i = 0; i < bits; ++i)
     {
-       expr.quantile[expr_quantile_i++] = q[i];
+      expr.quantile[expr_quantile_i++] = q[i];
       
     }
   }
   return expr;
- }
+}
 
 
 
@@ -219,7 +215,7 @@ class EliasFanoDB
   // Store the gene metadata, gene support in cells at the index
   typedef std::map<std::string, unsigned int> GeneIndex;
 
- // private:
+  // private:
   CellTypeIndex metadata;
   ExpressionMatrix ef_data;
   std::map<CellType, int> cell_types_id;
@@ -233,14 +229,16 @@ class EliasFanoDB
   template<class Archive>
   void serialize(Archive& archive)
   {
+
+    // std::cerr << "SERIALIZATION" << std::endl;
     archive(
-            metadata, 
-            // ef_data, 
-            cell_types_id, 
-            inverse_cell_type, 
-            gene_counts, 
-            total_cells, 
-            quantization_bits);
+      metadata, 
+      ef_data, 
+      cell_types_id, 
+      inverse_cell_type, 
+      gene_counts, 
+      total_cells, 
+      quantization_bits);
     // archive(gene_counts, total_cells, quantization_bits);
   }
   
@@ -276,7 +274,7 @@ class EliasFanoDB
     }
     
     
-} 
+  } 
   
   void dumpGenes()
   {
@@ -298,9 +296,9 @@ class EliasFanoDB
       long total = 0;
       for (auto const& t : m.second)
       {
-          auto str = inverse_cell_type[t.first];
-          // str.size();
-          total += str.size();
+        auto str = inverse_cell_type[t.first];
+        // str.size();
+        total += str.size();
       }
       std::cout << total <<std:: endl;
     }
@@ -511,7 +509,7 @@ class EliasFanoDB
       bytes += int((d.expr.quantile.size() / 8) + 1);
       
     }
-    bytes += ef_data.size() * 32; // overhead of l idf and deque struct
+    bytes += ef_data.size() * 128; // overhead of l idf and deque struct
     return bytes;
   }
 
@@ -601,12 +599,14 @@ class EliasFanoDB
 
   // TODO(Nikos) this function can be optimized.. It uses the native quering mechanism
   // that casts the results into native R data structures
-  Rcpp::List findMarkerGenes(const Rcpp::CharacterVector& gene_list, unsigned int min_support_cutoff = 5)
+  Rcpp::List findMarkerGenes(const Rcpp::CharacterVector& gene_list, unsigned int min_support_cutoff)
   {
     Rcpp::List t;
-    std::unordered_map<CellID, Transaction > cell_index;
+    std::unordered_map<CellID, Transaction> cell_index;
     Rcpp::List genes_results = queryGenes(gene_list);
+
     const Rcpp::CharacterVector gene_names = genes_results.names();
+    
     for (auto const& gene_hit : gene_names)
     {
       auto gene_name = Rcpp::as<std::string>(gene_hit);
@@ -821,33 +821,33 @@ class EliasFanoDB
 // [[Rcpp::export]]
 Rcpp::RawVector getByteStream(const EliasFanoDB& efdb)
 {
-    // TODO(Nikos) improve accuracy of the dbMemoryFootprint
-    Rcpp::RawVector stream(efdb.dbMemoryFootprint() + (1 << 26));
-    boost::iostreams::stream_buffer<boost::iostreams::array_sink> buf((char*) &stream[0], stream.size());
-    std::ostream ss(&buf);
-    {
-      cereal::BinaryOutputArchive oarchive(ss);
-      oarchive(efdb);
-    }
-    return stream;
+  // TODO(Nikos) improve accuracy of the dbMemoryFootprint
+  
+
+  Rcpp::RawVector stream(500000000);
+  boost::iostreams::stream_buffer<boost::iostreams::array_sink> buf((char*) &stream[0], stream.size());
+  std::ostream ss(&buf);
+  {
+    cereal::BinaryOutputArchive oarchive(ss);
+    oarchive(efdb);
+  }
+  return stream;
 }
 
 
 // [[Rcpp::export]]
 EliasFanoDB loadByteStream(const Rcpp::RawVector& src)
 {
+  // std::cerr << src.size() << std::endl;
   boost::iostreams::stream<boost::iostreams::array_source> ss((char*) & src[0], src.size());
   EliasFanoDB efdb;
+  std::cerr << "Stream allocated" << std::endl;
   {
     cereal::BinaryInputArchive iarchive(ss);
     iarchive(efdb);
   }
   return efdb;
 }
-
-
-
-
 
 RCPP_MODULE(EliasFanoDB)
 {
@@ -862,7 +862,8 @@ RCPP_MODULE(EliasFanoDB)
     .method("findCellTypes", &EliasFanoDB::findCellTypes)
     .method("efMemoryFootprint", &EliasFanoDB::dataMemoryFootprint)
     .method("dbMemoryFootprint", &EliasFanoDB::dbMemoryFootprint)
-    .method("dumpGenes", &EliasFanoDB::dumpGenes);
+    .method("dumpGenes", &EliasFanoDB::dumpGenes)
+    .method("findMarkerGenes",&EliasFanoDB::findMarkerGenes);
 
   function("getByteStream", &getByteStream);
   function("loadByteStream", &loadByteStream); 
