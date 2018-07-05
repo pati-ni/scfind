@@ -23,7 +23,7 @@ Description: Recently a very large collection of single-cell RNA-seq (scRNA-seq)
 License: GPL-3
 Imports:
     SingleCellExperiment, methods, Rcpp (>= 0.8.5), SummarizedExperiment, shiny
-LinkingTo: Rcpp, RcppArmadillo
+LinkingTo: Rcpp, RcppArmadillo, BH, Rcereal
 Depends: R(>= 3.4), methods, Rcpp
 RcppModules: EliasFanoDB
 Encoding: UTF-8
