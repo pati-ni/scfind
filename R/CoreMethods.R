@@ -131,6 +131,7 @@ load.serialized.object <- function(filename){
     {
         object@metadata <- list()
     }
+    message("Done Loading")
     return(object)
 }
 
