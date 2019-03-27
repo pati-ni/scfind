@@ -204,7 +204,7 @@ class EliasFanoDB
 
   EliasFanoDB();
   
-  void dumpGenes();
+  void dumpGenes() const;
 
   void clearDB();
  
@@ -212,7 +212,7 @@ class EliasFanoDB
  
   int loadByteStream(const Rcpp::RawVector& stream);
 
-  Rcpp::RawVector getByteStream();
+  Rcpp::RawVector getByteStream() const;
 
   long eliasFanoCoding(const std::vector<int>& ids, const Rcpp::NumericVector& values);
   
@@ -224,13 +224,13 @@ class EliasFanoDB
   long encodeMatrix(const std::string& cell_type_name, const Rcpp::NumericMatrix& gene_matrix);
 
 
-  Rcpp::List total_genes();
+  Rcpp::List total_genes() const;
   
   // Get a vector that represents support for a set of genes with respect to a specific dataset
   Rcpp::IntegerVector totalCells(const Rcpp::CharacterVector&, const Rcpp::CharacterVector&) const;
   
   // 
-  Rcpp::CharacterVector getGenesInDB();
+  Rcpp::CharacterVector getGenesInDB() const;
   
   int getTotalCells(const Rcpp::CharacterVector&) const;
 
@@ -244,35 +244,35 @@ class EliasFanoDB
   
   CellTypeIndex getCellTypeIDs(const std::set<std::string>& datasets) const;
   
-  Rcpp::NumericVector getCellTypeSupport(Rcpp::CharacterVector& cell_types);
+  Rcpp::NumericVector getCellTypeSupport(Rcpp::CharacterVector& cell_types) const;
   
-  Rcpp::List queryGenes(const Rcpp::CharacterVector& gene_names, const Rcpp::CharacterVector& datasets_active);
+  Rcpp::List queryGenes(const Rcpp::CharacterVector& gene_names, const Rcpp::CharacterVector& datasets_active) const;
   
-  size_t dataMemoryFootprint();
+  size_t dataMemoryFootprint() const;
 
-  size_t quantizationMemoryFootprint();
+  size_t quantizationMemoryFootprint() const;
   
-  size_t dbMemoryFootprint();
+  size_t dbMemoryFootprint() const;
 
   // And query
-  Rcpp::List findCellTypes(const Rcpp::CharacterVector& gene_names, const Rcpp::CharacterVector& datasets_active);
+  Rcpp::List findCellTypes(const Rcpp::CharacterVector& gene_names, const Rcpp::CharacterVector& datasets_active) const;
 
 
   // TODO(Nikos) this function can be optimized.. It uses the native quering mechanism
   // that casts the results into native R data structures
-  Rcpp::DataFrame findMarkerGenes(const Rcpp::CharacterVector& gene_list, const Rcpp::CharacterVector datasets_active, unsigned int min_support_cutoff, bool console_message);
+  Rcpp::DataFrame findMarkerGenes(const Rcpp::CharacterVector& gene_list, const Rcpp::CharacterVector datasets_active, unsigned int min_support_cutoff, bool console_message) const;
 
 
   Rcpp::DataFrame _findCellTypeMarkers(const Rcpp::CharacterVector& cell_types, 
                                        const Rcpp::CharacterVector& background, 
-                                       const std::vector<GeneName>&);
+                                       const std::vector<GeneName>&) const;
 
   Rcpp::DataFrame findCellTypeMarkers(const Rcpp::CharacterVector& cell_types, 
-                                      const Rcpp::CharacterVector& background);
+                                      const Rcpp::CharacterVector& background) const;
 
   Rcpp::DataFrame evaluateCellTypeMarkers(const Rcpp::CharacterVector& cell_types, 
                                           const Rcpp::CharacterVector& gene_set, 
-                                          const Rcpp::CharacterVector& background);
+                                          const Rcpp::CharacterVector& background) const ;
   
 
   
@@ -289,12 +289,12 @@ class EliasFanoDB
 
   std::map<std::string, std::vector<int> > intersect_cells(std::set<std::string> gene_set, Rcpp::List genes_results) const ;
 
-  int dbSize();
+  int dbSize() const;
   
-  void dumpEFsize(int);
-  int sample(int index);
+  void dumpEFsize(int) const ;
+  int sample(int index) const;
 
-  std::vector<int> decode(int index);
+  std::vector<int> decode(int index) const;
   
   int insertNewCellType(const CellType& cell_type);
   
